@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"net/http"
 	"web"
 )
@@ -10,14 +9,18 @@ func main() {
 	//创造web实例
 	webserver := web.New()
 	//添加路由
-	webserver.GET("/", func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprintf(w, "URL.Path = %q\n", r.URL.Path)
+	webserver.GET("/", func(context *web.Context) {
+		context.HTML(http.StatusOK, "<h1>Hello Web</h1>")
 	})
 
-	webserver.GET("/hello", func(w http.ResponseWriter, r *http.Request) {
-		for k, v := range r.Header {
-			fmt.Fprintf(w, "Header[%q] = %q\n", k, v)
-		}
+	webserver.GET("/hello", func(context *web.Context) {
+		context.String(http.StatusOK, "Hello %s, you're at %s\n", context.Query("name"), context.Path)
+	})
+	webserver.POST("/login", func(context *web.Context) {
+		context.JSON(http.StatusOK, web.H{
+			"username": context.PostForm("username"),
+			"password": context.PostForm("password"),
+		})
 	})
 	//启动WEB服务
 	webserver.Run(":9999")
