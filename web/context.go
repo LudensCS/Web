@@ -16,6 +16,7 @@ type Context struct {
 	//request info
 	Path   string
 	Method string
+	Params map[string]string
 	//response info
 	StatusCode int
 }
@@ -28,6 +29,12 @@ func NewContext(w http.ResponseWriter, r *http.Request) *Context {
 		Path:   r.URL.Path,
 		Method: r.Method,
 	}
+}
+
+// 解析动态路由中key匹配值参数
+func (context *Context) Param(key string) string {
+	value, _ := context.Params[key]
+	return value
 }
 
 // 提供访问PostForm参数方法

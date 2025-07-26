@@ -16,6 +16,14 @@ func main() {
 	webserver.GET("/hello", func(context *web.Context) {
 		context.String(http.StatusOK, "Hello %s, you're at %s\n", context.Query("name"), context.Path)
 	})
+	webserver.GET("/hello/:name", func(context *web.Context) {
+		context.String(http.StatusOK, "Hello %s,you're at %s\n", context.Param("name"), context.Path)
+	})
+	webserver.GET("/assets/*filepath", func(context *web.Context) {
+		context.JSON(http.StatusOK, web.H{
+			"filepath": context.Param("filepath"),
+		})
+	})
 	webserver.POST("/login", func(context *web.Context) {
 		context.JSON(http.StatusOK, web.H{
 			"username": context.PostForm("username"),
