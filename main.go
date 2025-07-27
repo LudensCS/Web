@@ -30,6 +30,11 @@ func main() {
 			"password": context.PostForm("password"),
 		})
 	})
+	//分组控制
+	g1 := webserver.Group("/index")
+	g1.GET("/user/:name", func(context *web.Context) {
+		context.String(http.StatusOK, "Hello %s,you're at %s\n", context.Param("name"), context.Path)
+	})
 	//启动WEB服务
 	webserver.Run(":9999")
 }

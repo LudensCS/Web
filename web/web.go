@@ -9,12 +9,17 @@ type HandleFunc func(context *Context)
 
 // Engine实现ServeHTTP的接口,添加路由映射表
 type Engine struct {
+	*RouterGroup
 	router *Router
+	groups []*RouterGroup
 }
 
 // Engine构造函数
 func New() *Engine {
-	return &Engine{router: NewRouter()}
+	engine := &Engine{router: NewRouter()}
+	engine.RouterGroup = &RouterGroup{engine: engine}
+	engine.groups = []*RouterGroup{engine.RouterGroup}
+	return engine
 }
 
 // 添加静态路由的方法
@@ -41,4 +46,35 @@ func (engine *Engine) Run(addr string) error {
 func (engine *Engine) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	context := NewContext(w, r)
 	engine.router.handle(context)
+}
+
+// 路由分组
+type RouterGroup struct {
+	prefix      string       //组内前缀
+	Middlewares []HandleFunc //中间件
+	parent      *RouterGroup //父节点
+	engine      *Engine      //共用Engine
+}
+
+// 新建分组
+func (group *RouterGroup) Group(prefix string) *RouterGroup {
+	engine := group.engine
+	newGroup := &RouterGroup{
+		prefix: group.prefix + prefix,
+		parent: group,
+		engine: engine,
+	}
+	engine.groups = append(engine.groups, newGroup)
+	return newGroup
+}
+
+func (group *RouterGroup) AddRoute(method string, comp string, handler HandleFunc) {
+	pattern := group.prefix + comp
+	group.engine.router.AddRoute(method, pattern, handler)
+}
+func (group *RouterGroup) GET(comp string, handler HandleFunc) {
+	group.AddRoute("GET", comp, handler)
+}
+func (group *RouterGroup) POST(comp string, handler HandleFunc) {
+	group.AddRoute("POST", comp, handler)
 }
