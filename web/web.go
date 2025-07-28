@@ -2,6 +2,7 @@ package web
 
 import (
 	"net/http"
+	"strings"
 )
 
 // 定义路由映射的处理方法
@@ -44,7 +45,14 @@ func (engine *Engine) Run(addr string) error {
 
 // 解析请求路径,查找路由映射表。如果查到就执行注册的方法,否则返回404
 func (engine *Engine) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	middlewares := make([]HandleFunc, 0)
+	for _, group := range engine.groups {
+		if strings.HasPrefix(r.URL.Path, group.prefix) {
+			middlewares = append(middlewares, group.Middlewares...)
+		}
+	}
 	context := NewContext(w, r)
+	context.Middlewares = middlewares
 	engine.router.handle(context)
 }
 
@@ -68,13 +76,23 @@ func (group *RouterGroup) Group(prefix string) *RouterGroup {
 	return newGroup
 }
 
+// 按组添加路由
 func (group *RouterGroup) AddRoute(method string, comp string, handler HandleFunc) {
 	pattern := group.prefix + comp
 	group.engine.router.AddRoute(method, pattern, handler)
 }
+
+// 按组添加GET路由
 func (group *RouterGroup) GET(comp string, handler HandleFunc) {
 	group.AddRoute("GET", comp, handler)
 }
+
+// 按组添加POST路由
 func (group *RouterGroup) POST(comp string, handler HandleFunc) {
 	group.AddRoute("POST", comp, handler)
+}
+
+// 添加中间件
+func (group *RouterGroup) Use(middlewares ...HandleFunc) {
+	group.Middlewares = append(group.Middlewares, middlewares...)
 }

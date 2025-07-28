@@ -51,10 +51,13 @@ func (router *Router) handle(context *Context) {
 	if nd != nil {
 		context.Params = params
 		key := context.Method + "-" + nd.pattern
-		router.Handlers[key](context)
+		context.Middlewares = append(context.Middlewares, router.Handlers[key])
 	} else {
-		context.String(404, "404 NOT FOUND: %s\n", context.Path)
+		context.Middlewares = append(context.Middlewares, func(context *Context) {
+			context.String(404, "404 NOT FOUND: %s\n", context.Path)
+		})
 	}
+	context.Next()
 }
 
 // 匹配路由并解析匹配参数

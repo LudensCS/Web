@@ -19,6 +19,9 @@ type Context struct {
 	Params map[string]string
 	//response info
 	StatusCode int
+	//middlewares
+	Middlewares []HandleFunc
+	index       int
 }
 
 // Context构造函数
@@ -28,7 +31,22 @@ func NewContext(w http.ResponseWriter, r *http.Request) *Context {
 		Req:    r,
 		Path:   r.URL.Path,
 		Method: r.Method,
+		index:  -1,
 	}
+}
+
+// 执行中间件
+func (context *Context) Next() {
+	context.index++
+	for ; context.index < len(context.Middlewares); context.index++ {
+		context.Middlewares[context.index](context)
+	}
+}
+
+// 错误
+func (context *Context) Fail(code int, err string) {
+	context.index = len(context.Middlewares)
+	context.JSON(code, H{"message": err})
 }
 
 // 解析动态路由中key匹配值参数
