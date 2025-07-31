@@ -21,7 +21,7 @@ func main() {
 	//创造web实例
 	webserver := web.New()
 	//添加日志中间件
-	webserver.Use(web.Logger())
+	webserver.Use(web.Logger(), web.Recovery())
 	webserver.SetFuncMap(template.FuncMap{
 		"FormatAsDate": FormatAsDate,
 	})
@@ -43,6 +43,10 @@ func main() {
 			"title": "web",
 			"now":   time.Date(2025, 7, 30, 21, 5, 0, 0, time.UTC),
 		})
+	})
+	webserver.GET("/panic", func(context *web.Context) {
+		names := []string{"ludens"}
+		context.String(http.StatusOK, names[100])
 	})
 	//启动WEB服务
 	webserver.Run(":9999")
