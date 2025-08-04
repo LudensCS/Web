@@ -1,4 +1,4 @@
-module GoWeb
+module github.com/LudensCs/Web
 
 go 1.24.4
 
