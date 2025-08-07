@@ -5,7 +5,8 @@ import (
 	"net/http"
 	"text/template"
 	"time"
-	"web"
+
+	"github.com/LudensCS/Web/web"
 )
 
 type student struct {

@@ -1,7 +1,5 @@
-module github.com/LudensCs/Web
+module github.com/LudensCS/Web
 
 go 1.24.4
 
-replace web => ./web
-
-require web v0.0.0-00010101000000-000000000000
+require github.com/LudensCS/Web/web v0.0.0-20250804093508-f50e59a4ec6f
